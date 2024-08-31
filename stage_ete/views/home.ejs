@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .navbar {
+            background-color: #00bcd4;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        .navbar-brand {
+            color: #ffffff;
+            margin-right: auto;
+            display: flex;
+            align-items: center;
+        }
+        .navbar-brand img {
+            height: 40px;
+            margin-right: 10px;
+        }
+        .navbar a {
+            color: #ffffff;
+            margin: 0 15px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .navbar a:hover {
+            color: #e0f7fa;
+        }
+        .search-form {
+            display: flex;
+            justify-content: center;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .search-form input {
+            border-radius: 20px;
+            border: 1px solid #00acc1;
+            padding: 5px 15px;
+            width: 300px;
+        }
+        .search-form button {
+            border: none;
+            background-color: #0097a7;
+            color: #ffffff;
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin-left: -5px;
+        }
+        .search-form button:hover {
+            background-color: #00838f;
+        }
+        .footer {
+            background-color: #343a40;
+            color: #ffffff;
+            padding: 30px 0;
+        }
+        .footer a {
+            color: #ffffff;
+        }
+        .footer a:hover {
+            color: #f8f9fa;
+        }
+        .discounted {
+            color: red;
+            font-weight: bold;
+        }
+        .original-price {
+            text-decoration: line-through;
+            color: grey;
+        }
+        .sold-label {
+            background-color: red;
+            color: white;
+            padding: 2px 5px;
+            border-radius: 5px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .product-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .carousel-inner img {
+            width: 100%;
+            height: 500px; /* Ajustez la hauteur selon vos besoins */
+            object-fit: contain; /* Assure que l'image est entièrement visible */
+            margin: auto; /* Centrage automatique */
+            position: relative;
+        }
+        .carousel-caption {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .carousel-control-prev, .carousel-control-next {
+            filter: invert(100%);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <a class="navbar-brand" href="/home?userId=<%= userId %>">
+            Home<img src="/shopping-en-ligne.png" alt="App Logo" class="logo">
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="search-form">
+                <form action="/search" method="GET" class="form-inline">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Rechercher un produit" aria-label="Search" name="query">
+                    <button class="btn btn-outline-light" type="submit">Rechercher</button>
+                </form>
+            </div>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/panier?userId=<%= userId %>">Panier</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/login">Déconnecter</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Carrousel d'images -->
+    <div id="carouselExampleIndicators" class="carousel slide mt-5" data-ride="carousel" data-interval="5000">
+        <ol class="carousel-indicators">
+            <% products.forEach((product, index) => { %>
+                <li data-target="#carouselExampleIndicators" data-slide-to="<%= index %>" class="<%= index === 0 ? 'active' : '' %>"></li>
+            <% }) %>
+        </ol>
+        <div class="carousel-inner">
+            <% products.forEach((product, index) => { %>
+                <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
+                    <img src="<%= product.imageUrl %>" class="d-block w-100" alt="<%= product.name %>">
+                    <div class="carousel-caption">
+                        <h5><%= product.name %></h5>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+        <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
+        </a>
+    </div>
+
+    <!-- Liste des produits -->
+    <div class="product-list container mt-5">
+        <div class="row">
+            <% products.forEach(product => { 
+                const now = new Date();
+                const validityDate = new Date(product.date_de_validite);
+                const twoMonthsFromNow = new Date(now);
+                twoMonthsFromNow.setMonth(now.getMonth() + 2);
+                const isDiscounted = validityDate <= twoMonthsFromNow && validityDate >= now;
+                const discountPercentage = 20; // Exemple de pourcentage de réduction
+                const discountedPrice = product.price * (1 - discountPercentage / 100);
+            %>
+                <div class="col-md-4 product-item">
+                    <div class="card">
+                        <% if (isDiscounted) { %>
+                            <div class="sold-label">SOLD</div>
+                        <% } %>
+                        <img src="<%= product.imageUrl %>" alt="<%= product.name %>" class="card-img-top">
+                        <div class="card-body">
+                            <h5 class="card-title"><%= product.name %></h5>
+                            <p class="card-text"><%= product.description %></p>
+                            <% if (isDiscounted) { %>
+                                <p class="card-text">
+                                    <span class="original-price">$<%= product.price.toFixed(2) %></span><br>
+                                    <span class="discounted">Price: $<%= discountedPrice.toFixed(2) %></span>
+                                </p>
+                            <% } else { %>
+                                <p class="card-text">Price: $<%= product.price.toFixed(2) %></p>
+                            <% } %>
+                            <form action="/add-to-cart" method="POST">
+                                <input type="hidden" name="productId" value="<%= product._id %>">
+                                <input type="hidden" name="userId" value="<%= userId %>">
+                                <button type="submit" class="btn btn-primary">Ajouter au panier</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <h5>À propos</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-white">Notre entreprise</a></li>
+                        <li><a href="#" class="text-white">Carrières</a></li>
+                        <li><a href="#" class="text-white">Partenaire 1</a></li>
+                        <li><a href="#" class="text-white">Partenaire 2</a></li>
+                        <li><a href="#" class="text-white">Partenaire 3</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>Suivez-nous</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-white">Facebook</a></li>
+                        <li><a href="#" class="text-white">Twitter</a></li>
+                        <li><a href="#" class="text-white">Instagram</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>Informations</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-white">À propos</a></li>
+                        <li><a href="#" class="text-white">Politique de confidentialité</a></li>
+                        <li><a href="#" class="text-white">Conditions d'utilisation</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 text-center mt-3">
+                    <p>&copy; 2024 Your Company. Tous droits réservés.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
